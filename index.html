@@ -1,31 +1,23 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <meta name="description" content="Herramienta interna para digitalización de documentos VUCEM"/>
-    <meta name="keywords" content="Digitalizador VUCEM, PDF, Ventanilla Única"/>
-    <title>Digitalizador VUCEM - Sistema Interno</title>
+    <meta name="description" content="Reporte de Existencias Físicas y Disponibilidad en Almacén"/>
+    <meta name="keywords" content="Inventario, On-Hand, Logística, Almacén, Existencias"/>
+    <title>Saldos de Inventario | Portal Logístico</title>
     <!-- Styles -->
-    <link rel="stylesheet" href="css/http_cdn.jsdelivr.net_npm_bootstrap@5.1.3_dist_css_bootstrap.css">
+    <link rel="stylesheet" href="css/AlmexStyle.css">
     <link rel="stylesheet" href="css/http_cdnjs.cloudflare.com_ajax_libs_font-awesome_6.0.0_css_all.css">
-    <link rel="stylesheet" href="css/VucemStyles.css">
-
-    <!-- Font Awesome Local (5.15.3) -->
-    <link rel="stylesheet" href="vendor/fontawesome-5.15.3/css/fontawesome.min.css">
+    <link rel="stylesheet" href="css/http_cdn.jsdelivr.net_npm_bootstrap@5.1.3_dist_css_bootstrap.css">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    <!-- SCRIPTS BASE -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="vendor/bootstrap-5.0.0-dist/js/bootstrap.bundle.min.js"></script>
-    <script src="vendor/fontawesome-5.15.3/js/all.min.js"></script>
-
-    <!-- SCRIPTS -->
-
-    <script src="js/http_cdnjs.cloudflare.com_ajax_libs_pdf.js_3.11.174_pdf.js"></script>
-    <script src="js/http_cdnjs.cloudflare.com_ajax_libs_pdf-lib_1.17.1_pdf-lib.js"></script>
-    <script src="js/http_code.jquery.com_jquery-3.6.0.js"></script>
-    <script src="js/box-upload.js"></script>
-
-
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
 </head>
 <body>
 
@@ -33,8 +25,8 @@
 <nav class="navbar navbar-expand-lg fixed-top navbar-custom">
     <div class="container">
         <a class="navbar-brand" href="#">
-            <i class="fas fa-file-pdf me-2"></i>
-            Digitalizador VUCEM
+            <i class="fas fa-warehouse me-2"></i>
+            Portal de Inventarios
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
@@ -42,15 +34,7 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link active" href="#"><i class="fas fa-home me-1"></i> Inicio</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link nav-important" href="#especificaciones">
-                        <i class="fas fa-exclamation-circle me-1"></i> Especificaciones
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#ayuda"><i class="fas fa-question-circle me-1"></i> Ayuda</a>
+                    <a class="nav-link" href="http://10.10.10.17/glpi/"><i class="fas fa-headset me-1"></i> Soporte IT</a>
                 </li>
             </ul>
         </div>
@@ -61,141 +45,401 @@
 <div class="container main-container">
 
     <!-- Título -->
-    <img src="assets/Logo_ALMEX_SVG.svg" width="100" height="100" alt="Logo ALMEX">
-    <h1 class="page-title">
-        <!-- <i class="fas fa-file-pdf text-primary"></i> -->
-        Digitalizador de Documentos VUCEM
-    </h1>
-    <p class="page-subtitle">Sistema Interno de Preparación de Documentos</p>
-
-    <!-- Aviso Importante -->
-    <div class="important-notice">
-        <i class="fas fa-exclamation-triangle me-2"></i>
-        <strong>Uso Interno:</strong> Esta herramienta es exclusiva para personal autorizado.
-        Todos los archivos se procesan localmente en tu navegador, sin conexión a servidores externos.
+    <div class="text-center mb-4">
+        <img src="assets/Logo_ALMEX_SVG.svg" width="120" height="120" alt="Logo Corporativo">
+        <h1 class="page-title">Consulta de Existencias On-Hand</h1>
+        <p class="page-subtitle">Visibilidad en tiempo real de saldos y localizadores</p>
+        <p class="text-muted small mt-1">
+            <i class="fas fa-clock me-1"></i>
+            Última actualización: <span id="lastUpdateLabel"><em>cargando...</em></span>
+        </p>
     </div>
 
-    <div class="row">
-        <!-- Formulario de carga -->
-        <div class="col-lg-8 mx-auto">
-            <form class="box" id="digitalizerForm">
-                <div class="box__input">
-                    <svg class="box__icon" viewBox="0 0 50 43" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M48.4 26.5c-.9 0-1.7.7-1.7 1.7v11.6h-43.3v-11.6c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v13.2c0 .9.7 1.7 1.7 1.7h46.7c.9 0 1.7-.7 1.7-1.7v-13.2c0-1-.7-1.7-1.7-1.7zm-24.5 6.1c.3.3.8.5 1.2.5.4 0 .9-.2 1.2-.5l10-11.6c.7-.7.7-1.7 0-2.4s-1.7-.7-2.4 0l-7.1 8.3v-25.3c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v25.3l-7.1-8.3c-.7-.7-1.7-.7-2.4 0s-.7 1.7 0 2.4l10 11.6z"/>
-                    </svg>
-                    <input accept=".pdf" class="box__file" id="file" name="files[]" type="file"/>
-                    <label for="file">
-                        <b>Seleccionar archivo PDF</b>
-                        <i class="fas fa-file-upload ms-2"></i>
-                    </label>
-                    <br/>
-                    <button class="box__button" disabled id="btnDigitalizar" type="submit">
-                        <i class="fas fa-cogs me-2"></i>
-                        Digitalizar Documento
-                    </button>
-                </div>
-
-                <div class="box__uploading">
-                    <i class="fas fa-spinner fa-pulse fa-3x mb-3"></i>
-                    <br/>
-                    Procesando documento, por favor espere...
-                </div>
-
-                <div class="box__success">
-                    <i class="fas fa-check-circle fa-3x mb-3" style="color: var(--success-color);"></i>
-                    <br/>
-                    <a href="#" id="ligaDescarga" download>
-                        <i class="fas fa-file-download me-2"></i>
-                        Descargar Documento
-                    </a>
-                    <br/><br/>
-                    <a class="box__restart" href="#">
-                        <i class="fas fa-redo me-2"></i>
-                        Procesar Otro Documento
-                    </a>
-                </div>
-
-                <div class="box__error">
-                    <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
-                    <br/>
-                    <strong>Error:</strong> <span></span>
-                    <br/><br/>
-                    <a class="box__restart" href="#">
-                        <i class="fas fa-redo me-2"></i>
-                        Intentar Nuevamente
-                    </a>
-                </div>
-            </form>
+    <!-- Controles de Vista -->
+    <div class="view-controls">
+        <div class="btn-group shadow-sm">
+            <button type="button" class="btn btn-primary" id="btnViewTable">
+                <i class="fas fa-table me-2"></i>Vista Tabla
+            </button>
+            <button type="button" class="btn btn-outline-primary" id="btnViewGear">
+                <i class="fas fa-th-list me-2"></i>Vista Detalle
+            </button>
         </div>
     </div>
 
-    <!-- Especificaciones VUCEM -->
-    <div class="row" id="especificaciones">
-        <div class="col-lg-8 mx-auto">
-            <div class="specs-box">
-                <h4>
-                    <i class="fas fa-clipboard-check me-2"></i>
-                    Especificaciones Técnicas VUCEM
-                </h4>
-                <ul class="specs-list">
-                    <li>Formato: PDF sin formularios, contraseñas ni JavaScript</li>
-                    <li>Escala de grises a 8 bits de profundidad</li>
-                    <li>Resolución: 300 DPI (puntos por pulgada)</li>
-                    <li class="critical">Tamaño máximo: 3 MB (archivo de salida)</li>
-                    <li class="critical">Máximo 50 páginas por documento</li>
-                    <li>Sin hojas en blanco ni objetos OLE incrustados</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-
-    <!-- Características -->
-    <div class="features-section">
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-bolt"></i>
-                    </div>
-                    <h4>Rápido y Eficiente</h4>
-                    <p>Procesamiento local en tu navegador sin necesidad de subir archivos a servidores externos.</p>
+    <!-- Panel de Filtros -->
+    <div class="card mb-4 border-0 shadow-sm" style="border-radius: 15px;">
+        <div class="card-body bg-light" style="border-radius: 15px;">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold"><i class="fas fa-filter small me-1"></i> Organización</label>
+                    <select class="form-select filter-select" data-column="0">
+                        <option value="">Todas las Orgs</option>
+                        <option value="ALM1">ALM1 - Planta Norte</option>
+                        <option value="ALM2">ALM2 - Planta Sur</option>
+                    </select>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="feature-card critical">
-                    <div class="feature-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <h4>100% Seguro</h4>
-                    <p>Tus documentos nunca salen de tu computadora. Privacidad total garantizada.</p>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold"><i class="fas fa-map-marker-alt small me-1"></i>
+                        Subinventario</label>
+                    <select class="form-select filter-select" data-column="4">
+                        <option value="">Todos</option>
+                        <option value="PT">PT - Producto Terminado</option>
+                        <option value="REF">REF - Refacciones</option>
+                    </select>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-check-double"></i>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Búsqueda Inteligente</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" id="customSearch" class="form-control"
+                               placeholder="Buscar por código, descripción, lote o localizador...">
                     </div>
-                    <h4>Cumplimiento VUCEM</h4>
-                    <p>Aplica automáticamente todas las especificaciones técnicas requeridas por VUCEM.</p>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- VISTA 1: Tabla Estándar (DataTables) -->
+    <div id="standardTableView" class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table id="tablaExistencias" class="table table-hover align-middle mb-0" style="width:100%">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Cód. Org.</th>
+                            <th>Artículo</th>
+                            <th>Descripción</th>
+                            <th>Subinv.</th>
+                            <th class="text-end">Existencia</th>
+                            <th>UM</th>
+                            <th>Lote</th>
+                            <th>Expiración</th>
+                            <th>Localizador</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>ALM1</td>
+                            <td><strong>100254</strong></td>
+                            <td>Motor Industrial trifásico 5HP</td>
+                            <td>PT</td>
+                            <td class="text-end fw-bold text-primary">24.00</td>
+                            <td>UN</td>
+                            <td>L-9982-24</td>
+                            <td>2028-05-20</td>
+                            <td><span class="badge bg-secondary">A-10-22</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- VISTA 2: Gear Table (Vista Detallada) -->
+    <div id="gearTableView" class="gear-table-container"></div>
 </div>
 
 <!-- FOOTER -->
 <footer>
     <div class="container">
         <p>
-            <i class="fas fa-building me-2"></i>
-            <strong>Sistema Interno</strong> - Digitalizador VUCEM
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Control de Inventarios</strong> - Uso Exclusivo Interno ALMEX
         </p>
         <p class="footer-note">
-            © <script>document.write(new Date().getFullYear())</script> Todos los derechos reservados | Uso exclusivo interno
+            © <script>document.write(new Date().getFullYear())</script>
+            Departamento de Operaciones Logísticas
         </p>
     </div>
 </footer>
+<script>
+    let dataTable;
+    let gearData = [];
+    let gearPage = 0;
+    const gearPageSize = 20;
+    let filteredData = [];
+
+    $(document).ready(async function () {
+
+        // 1️⃣ Inicializar DataTable correctamente
+        dataTable = $('#tablaExistencias').DataTable({
+            language: { url: "//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json" },
+            dom: 'rtip',
+            pageLength: 10,
+            responsive: true
+        });
+
+        // Mostrar solo tabla estándar al inicio
+        $('#gearTableView').hide();
+
+        $('#btnViewTable').click(function () {
+            $('#standardTableView').fadeIn();
+            $('#gearTableView').hide();
+            $(this).removeClass('btn-outline-primary').addClass('btn-primary');
+            $('#btnViewGear').removeClass('btn-primary').addClass('btn-outline-primary');
+        });
+
+        $('#btnViewGear').click(function () {
+            $('#gearTableView').fadeIn();
+            $('#standardTableView').hide();
+            $(this).removeClass('btn-outline-primary').addClass('btn-primary');
+            $('#btnViewTable').removeClass('btn-primary').addClass('btn-outline-primary');
+        });
+
+        $('#customSearch').on('keyup', function () {
+            const q = this.value.toLowerCase();
+
+            filteredData = gearData.filter(r =>
+                r.item.toLowerCase().includes(q) ||
+                r.desc.toLowerCase().includes(q) ||
+                r.lote.toLowerCase().includes(q) ||
+                r.locator.toLowerCase().includes(q)
+            );
+
+            gearPage = 0;
+            renderStandardTable(filteredData);
+            renderGearPage(filteredData);
+        });
+
+        $('.filter-select').on('change', function () {
+            var colIdx = $(this).data('column');
+            dataTable.column(colIdx).search($(this).val()).draw();
+        });
+
+
+        // 2️⃣ Cargar datos de Oracle
+        await load();
+
+    });
+
+    async function load() {
+        const res = await fetch("BackEnd/getReport.php");
+
+        // Mostrar hora de última actualización del caché
+        const lastUpdated = res.headers.get('X-Cache-Updated');
+        if (lastUpdated) {
+            const dt = new Date(lastUpdated);
+            document.getElementById('lastUpdateLabel').textContent =
+                dt.toLocaleString('es-MX', {
+                    day: '2-digit', month: '2-digit', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                });
+        }
+
+        const soap = await res.text();
+        const soapXml = new DOMParser().parseFromString(soap, "text/xml");
+        const node = soapXml.getElementsByTagNameNS("*", "reportBytes")[0];
+
+        if (!node) {
+            return;
+        }
+
+        const base64 = soapXml.getElementsByTagNameNS("*", "reportBytes")[0].textContent;
+        const xml = base64ToXml(base64);
+        const lotes = xml.getElementsByTagName("G_LOTE");
+
+        const data = parseLotes(xml);
+        gearData = data;
+        filteredData = data;
+        gearPage = 0;
+
+        renderStandardTable(filteredData);
+        renderGearPage(filteredData);
+    }
+
+    function renderStandardTable(data) {
+        dataTable.clear();
+
+        data.forEach(r => {
+            dataTable.row.add([
+                r.org,
+                `<strong>${r.item}</strong>`,
+                r.desc,
+                r.subinv,
+                `<span class="fw-bold text-primary">${r.qty}</span>`,
+                r.um,
+                r.lote,
+                r.exp,
+                `<span class="badge bg-secondary">${r.locator}</span>`
+            ]);
+        });
+
+        dataTable.draw();
+    }
+
+    function renderGearView(data) {
+
+        const cont = document.getElementById("gearTableView");
+
+
+        let html = "";
+
+        let count = 0;
+
+        for (let r of data) {
+
+            count++;
+            if (count > 500) {
+                break;
+            }
+            if (!r.item || !r.org) {
+                continue;
+            }
+
+            html += `
+        <table class="gear-table">
+            <tr>
+                <td rowspan="6" class="image-cell">
+                    <img src="https://placehold.co/180x180?text=${r.item}" alt="Producto">
+                </td>
+                <th>Organización</th>
+                <td>${r.org}</td>
+                <th>Subinventario</th>
+                <td>${r.subinv}</td>
+            </tr>
+            <tr>
+                <th>Artículo</th>
+                <td class="data-label">${r.item}</td>
+                <th>Descripción</th>
+                <td>${r.desc}</td>
+            </tr>
+            <tr>
+                <th>Existencia</th>
+                <td class="fs-5 fw-bold text-primary">${r.qty}</td>
+                <th>Unidad Medida</th>
+                <td>${r.um}</td>
+            </tr>
+            <tr>
+                <th>Lote</th>
+                <td>${r.lote}</td>
+                <th>Expiración</th>
+                <td>${r.exp}</td>
+            </tr>
+            <tr>
+                <th>Localizador</th>
+                <td colspan="3"><span class="badge bg-dark fs-6">${r.locator}</span></td>
+            </tr>
+        </table>`;
+        }
+        cont.innerHTML = html;
+    }
+
+    function renderGearPage(data) {
+
+        const cont = document.getElementById("gearTableView");
+
+        const total = data.length;
+
+        const start = gearPage * gearPageSize;
+        const end = Math.min(start + gearPageSize, total);
+
+        const pageData = data.slice(start, end);
+        let html = "";
+
+// 1️⃣ Primero renderizamos las tarjetas
+        pageData.forEach(r => {
+            html += `
+    <table class="gear-table">
+        <tr>
+            <td rowspan="6" class="image-cell">
+                <img id="img-${r.item}" src="https://placehold.co/180x180?text=${r.item}">
+            </td>
+            <th>Org</th><td>${r.org}</td>
+            <th>Subinv</th><td>${r.subinv}</td>
+        </tr>
+        <tr><th>Item</th><td>${r.item}</td><th>Loc</th><td>${r.locator}</td></tr>
+        <tr><th>Qty</th><td>${r.qty}</td><th>UM</th><td>${r.um}</td></tr>
+        <tr><th>Lote</th><td>${r.lote}</td><th>Exp</th><td>${r.exp}</td></tr>
+        <tr><th>Desc</th><td colspan="3">${r.desc}</td></tr>
+    </table>
+    `;
+        });
+
+// 2️⃣ Luego agregamos el paginador
+        html += `
+<div class="gear-pagination">
+    <button class="gear-btn gear-btn-outline" onclick="prevGear()">
+        <i class="fas fa-chevron-left me-1"></i> Anterior
+    </button>
+
+    <span class="gear-page-indicator">
+        ${start + 1} – ${end} de ${total}
+    </span>
+
+    <button class="gear-btn gear-btn-outline" onclick="nextGear()">
+        Siguiente <i class="fas fa-chevron-right ms-1"></i>
+    </button>
+</div>
+`;
+
+        cont.innerHTML = html;
+        setTimeout(() => {
+            pageData.forEach(async r => {
+                const img = document.getElementById(`img-${r.item}`);
+                if (!img) return;
+
+                const real = await getItemImage(r.item);
+                img.src = real;
+            });
+        }, 50);
+    }
+
+
+    function base64ToXml(base64) {
+        const clean = base64.replace(/\s+/g, "").replace(/[^A-Za-z0-9+/=]/g, "");
+        const binary = atob(clean);
+        const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+        const xmlText = new TextDecoder("utf-8").decode(bytes);
+        return new DOMParser().parseFromString(xmlText, "text/xml");
+    }
+
+    function nextGear() {
+        if ((gearPage + 1) * gearPageSize < gearData.length) {
+            gearPage++;
+            renderGearPage(gearData);
+        }
+    }
+
+    function prevGear() {
+        if (gearPage > 0) {
+            gearPage--;
+            renderGearPage(gearData);
+        }
+    }
+
+    function parseLotes(xml) {
+        const nodes = xml.getElementsByTagName("G_LOTE");
+        let data = [];
+
+        for (let n of nodes) {
+            data.push({
+                org: n.getElementsByTagName("ORGANIZATION_CODE")[0]?.textContent || "",
+                item: n.getElementsByTagName("ITEM_NUMBER")[0]?.textContent || "",
+                desc: n.getElementsByTagName("ITEM_DESC")[0]?.textContent || "",
+                subinv: n.getElementsByTagName("SUBINVENTORY_CODE")[0]?.textContent || "",
+                qty: n.getElementsByTagName("QTY_ONHAND")[0]?.textContent || "0",
+                um: "UN",
+                lote: n.getElementsByTagName("LOT_NUMBER")[0]?.textContent || "",
+                exp: n.getElementsByTagName("EXPIRATION_DATE")[0]?.textContent || "",
+                locator: "—"
+            });
+        }
+
+        return data;
+    }
+    async function getItemImage(item) {
+        const res = await fetch(`BackEnd/getItemImage.php?item=${encodeURIComponent(item)}`);
+        const path = await res.text();
+
+        if (path && path.trim() !== "") {
+            return path;
+        }
+
+        // fallback si no hay imagen
+        return `https://placehold.co/180x180?text=${item}`;
+    }
+</script>
 
 </body>
 </html>
