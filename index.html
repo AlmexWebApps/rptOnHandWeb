@@ -73,19 +73,15 @@
             <div class="row g-3 align-items-end">
                 <div class="col-md-3">
                     <label class="form-label fw-bold"><i class="fas fa-filter small me-1"></i> Organización</label>
-                    <select class="form-select filter-select" data-column="0">
+                    <select id="filterOrg" class="form-select filter-select" data-column="0">
                         <option value="">Todas las Orgs</option>
-                        <option value="ALM1">ALM1 - Planta Norte</option>
-                        <option value="ALM2">ALM2 - Planta Sur</option>
                     </select>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label fw-bold"><i class="fas fa-map-marker-alt small me-1"></i>
                         Subinventario</label>
-                    <select class="form-select filter-select" data-column="4">
+                    <select id="filterSubinv" class="form-select filter-select" data-column="3">
                         <option value="">Todos</option>
-                        <option value="PT">PT - Producto Terminado</option>
-                        <option value="REF">REF - Refacciones</option>
                     </select>
                 </div>
                 <div class="col-md-6">
@@ -244,8 +240,29 @@
         filteredData = data;
         gearPage = 0;
 
+        populateFilters(data);
         renderStandardTable(filteredData);
         renderGearPage(filteredData);
+    }
+
+    function populateFilters(data) {
+        const orgs    = [...new Set(data.map(r => r.org).filter(Boolean))].sort();
+        const subinvs = [...new Set(data.map(r => r.subinv).filter(Boolean))].sort();
+
+        const selOrg    = document.getElementById('filterOrg');
+        const selSubinv = document.getElementById('filterSubinv');
+
+        orgs.forEach(v => {
+            const o = document.createElement('option');
+            o.value = o.textContent = v;
+            selOrg.appendChild(o);
+        });
+
+        subinvs.forEach(v => {
+            const o = document.createElement('option');
+            o.value = o.textContent = v;
+            selSubinv.appendChild(o);
+        });
     }
 
     function renderStandardTable(data) {
